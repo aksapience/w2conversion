@@ -122,7 +122,7 @@
  
   <div class="panel">
     <div class="label">Current annual 1099 pay</div>
-    <div class="inputbox"><span>$</span><input id="pay" type="number" step="1000" value="120000" /></div>
+    <div class="inputbox"><span>$</span><input id="pay" type="number" step="1000" value="0" /></div>
  
     <div class="gap"></div>
     <div class="label">Filing status</div>
@@ -188,7 +188,7 @@
     <div class="gap"></div>
     <div class="label">Fixed burden per head / month</div>
     <div class="hint">Flat per-employee cost (tooling seats, desk, etc.), billed monthly.</div>
-    <div class="inputbox"><span>$</span><input id="burdenFixed" type="number" step="100" value="2000" /></div>
+    <div class="inputbox"><span>$</span><input id="burdenFixed" type="number" step="100" value="0" /></div>
  
     <button class="toggle" id="qbiBtn">
       <span class="track" id="qbiTrack"><span class="knob"></span></span>
@@ -320,7 +320,7 @@
   "Wyoming": {none:true},
 };
  
-  const DEFAULTS = { pay:120000, covHealth:0, covEquip:0, keepRetire:0, keepOther:0, burdenPct:17, burdenFixed:2000, status:"single", qbi:false, state:"Select a state\u2026", customRate:5 };
+  const DEFAULTS = { pay:0, covHealth:0, covEquip:0, keepRetire:0, keepOther:0, burdenPct:17, burdenFixed:0, status:"single", qbi:false, state:"Select a state\u2026", customRate:5 };
  
   const usd = n => "$" + Math.round(n).toLocaleString("en-US");
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));

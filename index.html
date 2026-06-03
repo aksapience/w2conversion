@@ -146,36 +146,32 @@
     </div>
  
     <div class="gap"></div>
-    <div class="label">What the contractor funds themselves today (annual)</div>
-    <div class="hint">Costs they cover now that you'd take on as the employer. The total lowers the salary needed, because they no longer pay it out of pocket.</div>
+    <div class="label">Benefits you'll cover as the employer (annual)</div>
+    <div class="hint">Costs you take on that the contractor pays themselves today. These both lower the salary needed (they no longer pay out of pocket) and add to your cost.</div>
  
-    <div class="sliderhead"><span class="hint" style="margin:0;">Health insurance</span><span class="val" id="benHealthVal">$0</span></div>
-    <input type="range" id="benHealth" min="0" max="40000" step="500" value="0" />
+    <div class="sliderhead"><span class="hint" style="margin:0;">Health insurance</span><span class="val" id="covHealthVal">$0</span></div>
+    <input type="range" id="covHealth" min="0" max="40000" step="500" value="0" />
  
-    <div class="sliderhead" style="margin-top:12px;"><span class="hint" style="margin:0;">Retirement / 401(k)</span><span class="val" id="benRetireVal">$0</span></div>
-    <input type="range" id="benRetire" min="0" max="40000" step="500" value="0" />
+    <div class="sliderhead" style="margin-top:12px;"><span class="hint" style="margin:0;">Equipment</span><span class="val" id="covEquipVal">$0</span></div>
+    <input type="range" id="covEquip" min="0" max="20000" step="250" value="0" />
  
-    <div class="sliderhead" style="margin-top:12px;"><span class="hint" style="margin:0;">Equipment</span><span class="val" id="benEquipVal">$0</span></div>
-    <input type="range" id="benEquip" min="0" max="20000" step="250" value="0" />
- 
-    <div class="sliderhead" style="margin-top:12px;"><span class="hint" style="margin:0;">Other</span><span class="val" id="benOtherVal">$0</span></div>
-    <input type="range" id="benOther" min="0" max="20000" step="250" value="0" />
- 
-    <div class="subtotal"><span>Total they fund themselves</span><span id="benTotalVal">$0</span></div>
+    <div class="subtotal"><span>Total you'll cover</span><span id="covTotalVal">$0</span></div>
  
     <div class="gap"></div>
-    <div class="label">Health benefit you'll cover (annual)</div>
-    <div class="hint">Employer-paid health premiums. Adds to your cost only &#8212; does not change the equivalent salary.</div>
-    <div class="sliderhead">
-      <span class="hint" style="margin:0;">Slide to set</span>
-      <span class="val" id="healthVal">$0</span>
-    </div>
-    <input type="range" id="health" min="0" max="40000" step="500" value="0" />
-    <div class="ticks"><span>$0</span><span>$10k</span><span>$20k</span><span>$30k</span><span>$40k</span></div>
+    <div class="label">Costs they keep paying themselves (annual)</div>
+    <div class="hint">Things the contractor still funds out of pocket as a W-2 employee. Shown for context &#8212; these do not change the salary or your cost, because nothing changes hands.</div>
+ 
+    <div class="sliderhead"><span class="hint" style="margin:0;">Retirement / 401(k)</span><span class="val" id="keepRetireVal">$0</span></div>
+    <input type="range" id="keepRetire" min="0" max="40000" step="500" value="0" />
+ 
+    <div class="sliderhead" style="margin-top:12px;"><span class="hint" style="margin:0;">Other</span><span class="val" id="keepOtherVal">$0</span></div>
+    <input type="range" id="keepOther" min="0" max="20000" step="250" value="0" />
+ 
+    <div class="subtotal"><span>Total they keep funding</span><span id="keepTotalVal">$0</span></div>
  
     <div class="gap"></div>
-    <div class="label">Employer burden rate &#8212; beyond payroll tax &amp; health</div>
-    <div class="hint">Insurance, software, equipment, overhead, etc., as a % of salary.</div>
+    <div class="label">Employer burden rate &#8212; beyond payroll tax &amp; benefits</div>
+    <div class="hint">Insurance, software, overhead, etc., as a % of salary.</div>
     <div class="sliderhead">
       <span class="hint" style="margin:0;">Burden rate</span>
       <span class="val" id="burdenVal">17%</span>
@@ -195,10 +191,10 @@
     <div class="inputbox"><span>$</span><input id="burdenFixed" type="number" step="100" value="2000" /></div>
  
     <button class="toggle" id="qbiBtn">
-      <span class="track on" id="qbiTrack"><span class="knob"></span></span>
+      <span class="track" id="qbiTrack"><span class="knob"></span></span>
       <span>
         <span class="tg-title">Contractor gets the QBI deduction</span>
-        <span class="tg-sub">20% pass-through deduction. Turn off for high-income service businesses past the phase-out.</span>
+        <span class="tg-sub">20% pass-through deduction. Off by default &#8212; it fully phases out for high-income service businesses (likely most contractors here). Turn on only if the contractor actually qualifies.</span>
       </span>
     </button>
  
@@ -230,7 +226,14 @@
     </div>
   </div>
  
-  <div class="compare-head">
+  <div class="compare-head" style="margin-top:30px;">
+    <h2>The same dollar amount, two ways</h2>
+  </div>
+  <p class="hint">Take the figure above and ask the other question: if you paid that <em>same number</em> as a 1099 contractor versus as a W-2 salary, what actually happens &#8212; to their take-home, and to your cost? Same dollars, very different outcomes.</p>
+  <div class="cmpgrid" id="twoWaysGrid" style="margin-top:14px;"></div>
+  <p class="note" id="twoWaysTakeaway" style="margin-top:12px;"></p>
+ 
+  <div class="compare-head" style="margin-top:30px;">
     <h2>Compare two states</h2>
     <button class="reset" id="cmpToggle" style="margin:0;">Show</button>
   </div>
@@ -317,7 +320,7 @@
   "Wyoming": {none:true},
 };
  
-  const DEFAULTS = { pay:120000, benHealth:0, benRetire:0, benEquip:0, benOther:0, health:0, burdenPct:17, burdenFixed:2000, status:"single", qbi:true, state:"California", customRate:5 };
+  const DEFAULTS = { pay:120000, covHealth:0, covEquip:0, keepRetire:0, keepOther:0, burdenPct:17, burdenFixed:2000, status:"single", qbi:false, state:"Select a state\u2026", customRate:5 };
  
   const usd = n => "$" + Math.round(n).toLocaleString("en-US");
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -389,14 +392,15 @@
     return '<div class="row ' + cls + '"><span class="rl">' + label + '</span><span class="rv ' + neg + '">' + sign + usd(Math.abs(val)) + '</span></div>';
   }
  
-  let status = "single", qbi = true, cmpOpen = false;
+  let status = "single", qbi = false, cmpOpen = false;
  
   const $ = id => document.getElementById(id);
   const stateSelect = $("stateSelect"), stateRate = $("stateRate");
   const cmpA = $("cmpA"), cmpB = $("cmpB");
  
   const STATE_NAMES = Object.keys(STATE_TAX).sort();
-  const OPTIONS = ["Custom (flat rate)"].concat(STATE_NAMES);
+  const PLACEHOLDER = "Select a state\u2026";
+  const OPTIONS = [PLACEHOLDER, "Custom (flat rate)"].concat(STATE_NAMES);
   [stateSelect, cmpA, cmpB].forEach(sel => {
     OPTIONS.forEach(name => {
       const opt = document.createElement("option");
@@ -404,22 +408,23 @@
       sel.appendChild(opt);
     });
   });
-  stateSelect.value = "California";
+  stateSelect.value = PLACEHOLDER;
+  // compare-state pickers keep concrete defaults so the comparison is meaningful
   cmpA.value = "California"; cmpB.value = "Texas";
  
   function customRateVal() { return clamp(parseFloat(stateRate.value) || 0, 0, 20) / 100; }
  
   function readInputs() {
     const pay = clamp(parseFloat($("pay").value) || 0, 0, 100000000);
-    const benHealth = clamp(parseFloat($("benHealth").value) || 0, 0, 40000);
-    const benRetire = clamp(parseFloat($("benRetire").value) || 0, 0, 40000);
-    const benEquip = clamp(parseFloat($("benEquip").value) || 0, 0, 20000);
-    const benOther = clamp(parseFloat($("benOther").value) || 0, 0, 20000);
-    const benefits = benHealth + benRetire + benEquip + benOther;
-    const health = clamp(parseFloat($("health").value) || 0, 0, 40000);
+    const covHealth = clamp(parseFloat($("covHealth").value) || 0, 0, 40000);
+    const covEquip = clamp(parseFloat($("covEquip").value) || 0, 0, 20000);
+    const covered = covHealth + covEquip;        // employer takes these on: lowers salary AND adds to cost
+    const keepRetire = clamp(parseFloat($("keepRetire").value) || 0, 0, 40000);
+    const keepOther = clamp(parseFloat($("keepOther").value) || 0, 0, 20000);
+    const keep = keepRetire + keepOther;          // employee keeps paying: informational only
     const burdenPct = clamp(parseFloat($("burdenPct").value) || 0, 0, 40) / 100;
     const burdenFixed = clamp(parseFloat($("burdenFixed").value) || 0, 0, 1000000);
-    return { pay, benHealth, benRetire, benEquip, benOther, benefits, health, burdenPct, burdenFixed };
+    return { pay, covHealth, covEquip, covered, keepRetire, keepOther, keep, burdenPct, burdenFixed };
   }
  
   function render() {
@@ -427,65 +432,80 @@
     const cr = customRateVal();
     $("customWrap").style.display = sName === "Custom (flat rate)" ? "block" : "none";
  
-    const { pay, benHealth, benRetire, benEquip, benOther, benefits, health, burdenPct, burdenFixed } = readInputs();
+    const { pay, covHealth, covEquip, covered, keepRetire, keepOther, keep, burdenPct, burdenFixed } = readInputs();
  
     // live slider labels
-    $("benHealthVal").textContent = usd(benHealth);
-    $("benRetireVal").textContent = usd(benRetire);
-    $("benEquipVal").textContent = usd(benEquip);
-    $("benOtherVal").textContent = usd(benOther);
-    $("benTotalVal").textContent = usd(benefits);
-    $("healthVal").textContent = usd(health);
+    $("covHealthVal").textContent = usd(covHealth);
+    $("covEquipVal").textContent = usd(covEquip);
+    $("covTotalVal").textContent = usd(covered);
+    $("keepRetireVal").textContent = usd(keepRetire);
+    $("keepOtherVal").textContent = usd(keepOther);
+    $("keepTotalVal").textContent = usd(keep);
     $("burdenVal").textContent = (burdenPct * 100).toFixed(burdenPct * 100 % 1 === 0 ? 0 : 1) + "%";
     document.querySelectorAll("#burdenChips button").forEach(b =>
       b.classList.toggle("on", parseFloat(b.dataset.v) === +(burdenPct * 100).toFixed(1)));
  
-    const r1099 = compute1099(pay, sName, status, qbi, cr);
-    const salary = solveSalary(pay, sName, status, qbi, benefits, cr);
-    const rW2 = computeW2(salary, sName, status, cr);
+    const noState = sName === PLACEHOLDER;
+ 
+    // Over-funded guard: covered benefits can't sensibly exceed the contractor's net.
+    // Cap them for the math and flag it, rather than silently flooring salary at $0.
+    const r1099 = compute1099(pay, noState ? "Custom (flat rate)" : sName, status, qbi, cr);
+    const overFunded = covered > r1099.net;
+    const effCovered = Math.min(covered, r1099.net);
+ 
+    const solveState = noState ? "Custom (flat rate)" : sName;  // placeholder => treat state tax as 0 via custom 0%
+    const solveCr = noState ? 0 : cr;
+    const salary = solveSalary(pay, solveState, status, qbi, effCovered, solveCr);
+    const rW2 = computeW2(salary, solveState, status, solveCr);
  
     // effective state rate shown on the W-2 salary
     const effOnSalary = salary > 0 ? rW2.state / salary * 100 : 0;
-    $("effRate").innerHTML = sName === "Custom (flat rate)"
-      ? "Flat custom rate applied."
-      : (STATE_TAX[sName].none
-          ? "<b>" + sName + "</b>: no state income tax on wages."
-          : "<b>" + sName + "</b>: effective " + effOnSalary.toFixed(2) + "% on the W-2 salary (real brackets, std. deduction applied).");
+    $("effRate").innerHTML = noState
+      ? "<b style='color:var(--accent)'>Pick a state above</b> to apply real 2026 brackets. Until then, state income tax is treated as $0."
+      : sName === "Custom (flat rate)"
+        ? "Flat custom rate applied."
+        : (STATE_TAX[sName].none
+            ? "<b>" + sName + "</b>: no state income tax on wages."
+            : "<b>" + sName + "</b>: effective " + effOnSalary.toFixed(2) + "% on the W-2 salary (real brackets, std. deduction applied).");
  
     const empTax = employerFICA(salary);
-    const directCost = salary + empTax + benefits + health;
+    const directCost = salary + empTax + effCovered;
     const burdenExtra = salary * burdenPct + burdenFixed * 12;
     const loadedCost = directCost + burdenExtra;
  
     $("salary").textContent = usd(salary);
-    $("salaryDelta").textContent =
-      salary > pay ? usd(salary - pay) + " above the 1099 figure"
-      : salary < pay ? usd(pay - salary) + " below the 1099 figure"
-      : "same as the 1099 figure";
+    $("salaryDelta").textContent = overFunded
+      ? "Benefits you cover exceed their take-home \u2014 capped"
+      : (salary > pay ? usd(salary - pay) + " above the 1099 figure"
+        : salary < pay ? usd(pay - salary) + " below the 1099 figure"
+        : "same as the 1099 figure");
  
-    const benParts = [];
-    if (benHealth > 0) benParts.push("health " + usd(benHealth));
-    if (benRetire > 0) benParts.push("retirement " + usd(benRetire));
-    if (benEquip > 0) benParts.push("equipment " + usd(benEquip));
-    if (benOther > 0) benParts.push("other " + usd(benOther));
+    const covParts = [];
+    if (covHealth > 0) covParts.push("health " + usd(covHealth));
+    if (covEquip > 0) covParts.push("equipment " + usd(covEquip));
+    const keepParts = [];
+    if (keepRetire > 0) keepParts.push("retirement " + usd(keepRetire));
+    if (keepOther > 0) keepParts.push("other " + usd(keepOther));
  
     $("c1099").innerHTML =
       row("Gross pay", pay) + row("Self-employment tax (15.3%)", r1099.seTax, {neg:1}) +
       row("Federal income tax", r1099.fed, {neg:1}) + row("State income tax", r1099.state, {neg:1}) +
       row("Net take-home", r1099.net, {strong:1}) +
-      (benefits > 0 ? '<div class="note">\u2026out of which they fund ~' + usd(benefits) + ' themselves (' + benParts.join(", ") + ').</div>' : "");
+      (overFunded ? '<div class="note" style="color:var(--accent)">The benefits you\'ve set ($' + usd(covered).slice(1) + ') exceed their entire take-home, so the equivalent salary can\'t go lower than $0. Lower the covered benefits to model a real offer.</div>' : "") +
+      (!overFunded && covered > 0 ? '<div class="note">You\'ll take over ~' + usd(covered) + ' they fund today (' + covParts.join(", ") + '), so the salary needed drops by that much.</div>' : "") +
+      (keep > 0 ? '<div class="note">They keep funding ~' + usd(keep) + ' themselves (' + keepParts.join(", ") + ') \u2014 unchanged, so it doesn\'t affect the salary or your cost.</div>' : "");
  
     $("cw2").innerHTML =
       row("Salary", salary) + row("Employee payroll tax (7.65%)", rW2.empFICA, {neg:1}) +
       row("Federal income tax", rW2.fed, {neg:1}) + row("State income tax", rW2.state, {neg:1}) +
       row("Net take-home", rW2.net, {strong:1}) +
-      (benefits > 0 ? '<div class="note">+ ' + usd(benefits) + ' in employer benefits = equivalent to their 1099 net.</div>' : "");
+      (effCovered > 0 ? '<div class="note">+ ' + usd(effCovered) + ' in benefits you cover = equivalent to their 1099 net.</div>' : "");
  
     const moreDirect = directCost > pay;
     $("cemp").innerHTML =
       row("Salary", salary) + row("Employer payroll tax (7.65%)", empTax, {neg:1}) +
-      (benefits > 0 ? row("Benefits provided", benefits, {neg:1}) : "") +
-      (health > 0 ? row("Health benefit", health, {neg:1}) : "") +
+      (covHealth > 0 ? row("Health benefit", Math.min(covHealth, effCovered), {neg:1}) : "") +
+      (covEquip > 0 ? row("Equipment", Math.max(0, effCovered - covHealth), {neg:1}) : "") +
       row("Direct cost", directCost, {strong:1}) +
       '<div class="note">vs. ' + usd(pay) + ' today as a contractor \u2014 ' + usd(Math.abs(directCost - pay)) + ' ' + (moreDirect ? 'more' : 'less') + ' before overhead.</div>';
  
@@ -494,15 +514,73 @@
     $("cburden").innerHTML =
       row("Salary", salary) +
       row("Employer payroll tax", empTax, {neg:1}) +
-      (benefits > 0 ? row("Benefits", benefits, {neg:1}) : "") +
-      (health > 0 ? row("Health benefit", health, {neg:1}) : "") +
+      (covHealth > 0 ? row("Health benefit", Math.min(covHealth, effCovered), {neg:1}) : "") +
+      (covEquip > 0 ? row("Equipment", Math.max(0, effCovered - covHealth), {neg:1}) : "") +
       row("Burden (" + (burdenPct*100).toFixed(1) + "% of salary)", salary * burdenPct, {neg:1}) +
       row("Fixed (" + usd(burdenFixed) + "/mo \u00d7 12)", burdenFixed * 12, {neg:1}) +
       row("Fully loaded annual cost", loadedCost, {total:1}) +
       '<div class="note">That\'s <strong style="color:' + (moreLoaded ? 'var(--accent)' : 'var(--ink)') + '">' + usd(Math.abs(loadedCost - pay)) + ' ' + (moreLoaded ? 'more' : 'less') + '</strong> than the ' + usd(pay) + ' you pay today \u2014 a fully loaded multiple of <strong>' + multiple.toFixed(2) + '\u00d7</strong> the contractor rate.</div>';
  
-    if (cmpOpen) renderCompare(pay, benefits, health, burdenPct, burdenFixed, cr);
+    if (cmpOpen) renderCompare(pay, effCovered, 0, burdenPct, burdenFixed, cr);
+    renderTwoWays(pay, solveState, solveCr, effCovered, 0, burdenPct, burdenFixed);
   }
+ 
+  // "Same dollar amount, two ways": interpret the SAME figure as 1099 cash vs. W-2 salary.
+  function renderTwoWays(amount, sName, cr, benefits, health, burdenPct, burdenFixed) {
+    // Worker side
+    const asContractor = compute1099(amount, sName, status, qbi, cr);   // they pay full SE tax
+    const asEmployee = computeW2(amount, sName, status, cr);            // they pay only employee FICA
+ 
+    // Employer side
+    const contractorCost = amount;                                      // you pay exactly the cash, no more
+    const empTax = employerFICA(amount);
+    const employeeCost = amount + empTax + benefits + health + salaryBurden(amount, burdenPct, burdenFixed);
+ 
+    const takeHomeGap = asEmployee.net - asContractor.net;              // employee keeps more of same $
+    const costGap = employeeCost - contractorCost;                      // employer pays more for same $
+ 
+    const col = (title, sub, takeHome, takeRows, cost, costRows, accent) => `
+      <div class="cmpcol" style="${accent ? 'border-color:var(--accent);border-width:1.5px;' : ''}">
+        <h4>${title}</h4>
+        <div class="st">${sub}</div>
+        <div class="st" style="margin-top:8px;">Their net take-home</div>
+        <div class="sal">${usd(takeHome)}</div>
+        ${takeRows}
+        <div class="st" style="margin-top:12px;">Your cost</div>
+        <div class="sal">${usd(cost)}</div>
+        ${costRows}
+      </div>`;
+ 
+    const mini = (label, val, neg) =>
+      `<div class="crow"><span>${label}</span><span class="cv${neg ? '' : ''}">${neg ? '\u2212' : ''}${usd(Math.abs(val))}</span></div>`;
+ 
+    const contractorTake =
+      mini("Self-employment tax (15.3%)", asContractor.seTax, true) +
+      mini("Federal income tax", asContractor.fed, true) +
+      mini("State income tax", asContractor.state, true);
+    const employeeTake =
+      mini("Employee payroll tax (7.65%)", asEmployee.empFICA, true) +
+      mini("Federal income tax", asEmployee.fed, true) +
+      mini("State income tax", asEmployee.state, true);
+ 
+    const contractorCostRows =
+      `<div class="crow"><span>Cash paid</span><span class="cv">${usd(amount)}</span></div>` +
+      `<div class="crow"><span>Employer payroll tax</span><span class="cv">$0</span></div>` +
+      `<div class="crow"><span>Benefits / burden</span><span class="cv">$0</span></div>`;
+    const employeeCostRows =
+      `<div class="crow"><span>Salary</span><span class="cv">${usd(amount)}</span></div>` +
+      `<div class="crow"><span>Employer payroll tax</span><span class="cv">${usd(empTax)}</span></div>` +
+      `<div class="crow"><span>Benefits + health</span><span class="cv">${usd(benefits + health)}</span></div>` +
+      `<div class="crow"><span>Burden + fixed</span><span class="cv">${usd(salaryBurden(amount, burdenPct, burdenFixed))}</span></div>`;
+ 
+    document.getElementById("twoWaysGrid").innerHTML =
+      col("As a 1099 contractor", usd(amount) + " in cash", asContractor.net, contractorTake, contractorCost, contractorCostRows, false) +
+      col("As a W-2 salary", usd(amount) + " salary", asEmployee.net, employeeTake, employeeCost, employeeCostRows, true);
+ 
+    document.getElementById("twoWaysTakeaway").innerHTML =
+      `Same <strong>${usd(amount)}</strong> on paper. As a W-2 employee they keep <strong style="color:var(--green)">${usd(Math.abs(takeHomeGap))} ${takeHomeGap >= 0 ? 'more' : 'less'}</strong> take-home (you cover half their payroll tax), while it costs you <strong style="color:var(--accent)">${usd(Math.abs(costGap))} ${costGap >= 0 ? 'more' : 'less'}</strong> than paying the same figure as contractor cash. The headline number is identical; what it buys is not.`;
+  }
+  const salaryBurden = (s, pct, fixed) => s * pct + fixed * 12;
  
   function renderCompare(pay, benefits, health, burdenPct, burdenFixed, cr) {
     const cols = [["A", cmpA.value], ["B", cmpB.value]].map(([k, name]) => {
@@ -510,7 +588,7 @@
       const w2 = computeW2(salary, name, status, cr);
       const loaded = salary + employerFICA(salary) + benefits + health + salary * burdenPct + burdenFixed * 12;
       const eff = salary > 0 ? w2.state / salary * 100 : 0;
-      const noTax = name !== "Custom (flat rate)" && STATE_TAX[name].none;
+      const noTax = name !== "Custom (flat rate)" && (!STATE_TAX[name] || STATE_TAX[name].none);
       return { name, salary, loaded, eff, noTax };
     });
     const winIdx = cols[0].loaded <= cols[1].loaded ? 0 : 1;
@@ -542,7 +620,7 @@
     $("qbiTrack").classList.toggle("on", qbi);
     render();
   });
-  ["pay", "benHealth", "benRetire", "benEquip", "benOther", "health", "burdenPct", "burdenFixed"].forEach(id => $(id).addEventListener("input", render));
+  ["pay", "covHealth", "covEquip", "keepRetire", "keepOther", "burdenPct", "burdenFixed"].forEach(id => $(id).addEventListener("input", render));
  
   document.querySelectorAll("#burdenChips button").forEach(b => b.addEventListener("click", () => {
     $("burdenPct").value = b.dataset.v;
@@ -559,11 +637,10 @@
  
   $("resetBtn").addEventListener("click", () => {
     $("pay").value = DEFAULTS.pay;
-    $("benHealth").value = DEFAULTS.benHealth;
-    $("benRetire").value = DEFAULTS.benRetire;
-    $("benEquip").value = DEFAULTS.benEquip;
-    $("benOther").value = DEFAULTS.benOther;
-    $("health").value = DEFAULTS.health;
+    $("covHealth").value = DEFAULTS.covHealth;
+    $("covEquip").value = DEFAULTS.covEquip;
+    $("keepRetire").value = DEFAULTS.keepRetire;
+    $("keepOther").value = DEFAULTS.keepOther;
     $("burdenPct").value = DEFAULTS.burdenPct;
     $("burdenFixed").value = DEFAULTS.burdenFixed;
     stateRate.value = DEFAULTS.customRate;

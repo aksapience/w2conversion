@@ -4,34 +4,75 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>The Equivalent W-2 Salary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --paper:#f5f0e6; --ink:#1d1b17; --muted:#6f675a; --accent:#8a2f25;
-    --line:#d8cfbe; --card:#fbf8f1;
-    --serif:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
-    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    /* Sapience AI brand tokens — Brand Guidelines, May 2026.
+       Primary: Imperial Plum (identity), Charcoal Grey (grounds the work), Sand (warm base).
+       Sage is accent-only. Do not lead customer-facing surfaces with accent colors. */
+    --plum:#674C67;        /* Imperial Plum — primary brand */
+    --charcoal:#333436;    /* Charcoal Grey — ink / dark surface */
+    --sand:#FFFBF4;        /* Sand — warm light background */
+    --sage:#7A9B7E;        /* Sage — accent only (positive marker) */
+    --paper:#F2F0EA; --ink:#333436; --muted:#8E9094; --accent:#674C67;
+    --line:#E5E7EB; --card:#FFFFFF; --green:#7A9B7E;
+    --serif:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --voice:'Libre Baskerville','Iowan Old Style',Georgia,serif;
+    --mono:'Inter',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
   }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--serif);
-         padding:22px 16px 60px; }
+         padding:22px 16px 60px; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+         font-variant-numeric:tabular-nums; }
   .wrap { max-width:640px; margin:0 auto; }
-  .kicker { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent); font-family:var(--mono); }
-  h1 { font-size:30px; line-height:1.1; margin:6px 0 4px; font-weight:700; }
+  .kicker { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); font-family:var(--serif); font-weight:600; }
+  h1 { font-size:30px; line-height:1.2; margin:6px 0 4px; font-weight:700; letter-spacing:-0.01em; font-family:var(--voice); }
   .lede { color:var(--muted); font-size:14px; margin:0 0 22px; max-width:480px; }
-  .panel { background:var(--card); border:1px solid var(--line); border-radius:4px; padding:18px 18px 20px; }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 18px 20px; }
   .label { font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-family:var(--mono); margin-bottom:6px; }
   .hint { font-size:12px; color:var(--muted); margin-bottom:6px; }
-  .inputbox { display:flex; align-items:center; border:1px solid var(--line); border-radius:3px; background:#fff; padding:0 12px; }
-  .inputbox span { font-family:var(--mono); color:#9a9082; font-size:16px; }
+  .inputbox { display:flex; align-items:center; border:1px solid var(--line); border-radius:8px; background:#fff; padding:0 12px; }
+  .inputbox span { font-family:var(--mono); color:#8E9094; font-size:16px; }
   .inputbox input { flex:1; border:none; outline:none; font-family:var(--mono); font-size:18px;
                     color:var(--ink); padding:11px 8px; background:transparent; width:100%; -moz-appearance:textfield; }
   input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .selectbox { display:flex; align-items:center; border:1px solid var(--line); border-radius:8px; background:#fff; padding:0 4px 0 12px; }
+  .selectbox select { flex:1; border:none; outline:none; font-family:var(--mono); font-size:16px;
+                      color:var(--ink); padding:11px 8px; background:transparent; width:100%; cursor:pointer;
+                      -webkit-appearance:none; -moz-appearance:none; appearance:none; }
+  .selectbox::after { content:"\25BE"; color:#8E9094; font-family:var(--mono); padding-right:8px; pointer-events:none; }
+  .effrate { font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:6px; }
+  .effrate b { color:var(--ink); }
+  .sliderhead { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .sliderhead .val { font-family:var(--mono); font-size:18px; font-weight:700; color:var(--accent); }
+  input[type=range] { -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:2px;
+                      background:var(--line); outline:none; margin:6px 0 4px; cursor:pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:22px; height:22px;
+                      border-radius:50%; background:var(--accent); border:3px solid var(--card); cursor:pointer;
+                      box-shadow:0 1px 3px rgba(0,0,0,.25); }
+  input[type=range]::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:var(--accent);
+                      border:3px solid var(--card); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+  .ticks { display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:2px; }
+  .subtotal { display:flex; justify-content:space-between; align-items:baseline; margin-top:14px; padding-top:10px;
+              border-top:1px solid var(--line); font-size:13px; }
+  .subtotal span:first-child { color:var(--muted); }
+  .subtotal span:last-child { font-family:var(--mono); font-weight:700; color:var(--ink); font-size:15px; }
+  .chips { display:flex; gap:8px; margin-top:10px; }
+  .chips button { flex:1; padding:7px 4px; border:1px solid var(--line); border-radius:8px; background:#fff;
+                  font-family:var(--mono); font-size:12px; color:var(--ink); cursor:pointer; transition:all .12s; }
+  .chips button:hover { border-color:var(--accent); }
+  .chips button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
   .gap { height:16px; }
-  .seg { display:flex; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+  .seg { display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
   .seg button { flex:1; padding:11px 8px; border:none; cursor:pointer; background:#fff; color:var(--ink);
                 font-family:var(--mono); font-size:13px; transition:background .15s; }
   .seg button + button { border-left:1px solid var(--line); }
   .seg button.on { background:var(--accent); color:#fff; }
+  .two { display:flex; gap:12px; }
+  .two > div { flex:1; }
+  #customWrap { display:none; }
   .toggle { display:flex; align-items:center; gap:10px; background:none; border:none; cursor:pointer; padding:0; color:var(--ink); font-family:var(--serif); margin-top:18px; text-align:left; }
   .track { width:42px; height:24px; border-radius:12px; background:var(--line); position:relative; transition:background .2s; flex-shrink:0; }
   .track.on { background:var(--accent); }
@@ -39,27 +80,45 @@
   .track.on .knob { left:20px; }
   .tg-title { font-size:14px; font-weight:600; }
   .tg-sub { display:block; font-size:12px; color:var(--muted); }
-  .hero { background:var(--ink); color:var(--paper); border-radius:4px; padding:22px 20px; margin:16px 0; text-align:center; }
-  .hero .k { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#c9a99a; font-family:var(--mono); }
-  .hero .big { font-size:44px; font-weight:700; font-family:var(--mono); line-height:1.1; margin:6px 0 2px; }
-  .hero .sub { font-size:13px; color:#c9a99a; }
+  .hero { background:var(--plum); color:#fff; border-radius:12px; padding:24px 20px; margin:16px 0; text-align:center; }
+  .hero .k { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#d8c9d8; font-family:var(--serif); font-weight:600; }
+  .hero .big { font-size:46px; font-weight:700; font-family:var(--voice); line-height:1.05; margin:8px 0 4px; letter-spacing:-0.01em; }
+  .hero .sub { font-size:13px; color:#d8c9d8; }
   .cards { display:grid; grid-template-columns:1fr; gap:14px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:4px; padding:16px 18px; }
-  .card h3 { font-size:14px; font-weight:700; margin:0 0 10px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .card.burden { border-color:var(--accent); border-width:1.5px; }
+  .card h3 { font-size:15px; font-weight:700; margin:0 0 10px; font-family:var(--voice); }
+  .card h3 .tag { font-family:var(--serif); font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:3px; font-weight:600; }
   .row { display:flex; justify-content:space-between; align-items:baseline; padding:6px 0; border-bottom:1px solid var(--line); }
   .row .rl { color:var(--muted); font-size:13px; }
   .row .rv { font-family:var(--mono); font-size:14px; font-weight:500; }
   .row.strong .rv { font-size:16px; font-weight:700; }
+  .row.total .rv { font-size:18px; font-weight:700; }
   .row .neg { color:var(--accent); }
   .note { font-size:12px; color:var(--muted); margin-top:8px; line-height:1.5; }
+  .reset { margin-top:14px; background:none; border:1px solid var(--line); border-radius:8px; padding:9px 14px;
+           font-family:var(--mono); font-size:12px; color:var(--muted); cursor:pointer; transition:all .15s; }
+  .reset:hover { border-color:var(--accent); color:var(--accent); }
   .foot { font-size:11.5px; color:var(--muted); line-height:1.6; margin-top:20px; }
+  .compare-head { display:flex; justify-content:space-between; align-items:center; margin:26px 0 4px; }
+  .compare-head h2 { font-size:19px; margin:0; font-weight:700; font-family:var(--voice); }
+  .cmpgrid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .cmpcol { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 14px 16px; }
+  .cmpcol.win { border-color:var(--green); border-width:1.5px; }
+  .cmpcol h4 { font-size:13px; margin:0 0 2px; font-weight:700; }
+  .cmpcol .st { font-family:var(--mono); font-size:11px; color:var(--muted); margin-bottom:10px; }
+  .cmpcol .sal { font-family:var(--mono); font-size:24px; font-weight:700; margin:2px 0; }
+  .cmpcol .crow { display:flex; justify-content:space-between; font-size:12px; padding:4px 0; border-bottom:1px solid var(--line); }
+  .cmpcol .crow .cv { font-family:var(--mono); }
+  .winbadge { font-family:var(--mono); font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--green); margin-top:8px; }
+  @media (max-width:520px){ .cmpgrid{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="kicker">Contractor → Employee</div>
+  <div class="kicker">Contractor &#8594; Employee</div>
   <h1>The Equivalent W-2 Salary</h1>
-  <p class="lede">What to pay someone as a salaried employee so their take-home matches what they net today as a 1099 contractor. 2026 figures.</p>
+  <p class="lede">What to pay someone as a salaried employee so their take-home matches what they net today as a 1099 contractor &#8212; and what that role actually costs you fully loaded. 2026 figures.</p>
  
   <div class="panel">
     <div class="label">Current annual 1099 pay</div>
@@ -73,13 +132,67 @@
     </div>
  
     <div class="gap"></div>
-    <div class="label">State income tax (effective %)</div>
-    <div class="inputbox"><input id="stateRate" type="number" step="0.1" value="5" /><span>%</span></div>
+    <div class="label">State</div>
+    <div class="hint">Real 2026 brackets &amp; standard deduction (Tax Foundation). State tax recomputes at the W-2 salary, not the 1099 figure.</div>
+    <div class="selectbox">
+      <select id="stateSelect"></select>
+    </div>
+    <div class="effrate" id="effRate"></div>
+ 
+    <div id="customWrap">
+      <div class="gap"></div>
+      <div class="label">Custom flat state rate (effective %)</div>
+      <div class="inputbox"><input id="stateRate" type="number" step="0.1" value="5" /><span>%</span></div>
+    </div>
  
     <div class="gap"></div>
-    <div class="label">Benefits you'll provide (annual value)</div>
-    <div class="hint">Health premiums, 401(k) match, etc. that they currently pay themselves. Lowers the salary needed.</div>
-    <div class="inputbox"><span>$</span><input id="benefits" type="number" step="500" value="0" /></div>
+    <div class="label">What the contractor funds themselves today (annual)</div>
+    <div class="hint">Costs they cover now that you'd take on as the employer. The total lowers the salary needed, because they no longer pay it out of pocket.</div>
+ 
+    <div class="sliderhead"><span class="hint" style="margin:0;">Health insurance</span><span class="val" id="benHealthVal">$0</span></div>
+    <input type="range" id="benHealth" min="0" max="40000" step="500" value="0" />
+ 
+    <div class="sliderhead" style="margin-top:12px;"><span class="hint" style="margin:0;">Retirement / 401(k)</span><span class="val" id="benRetireVal">$0</span></div>
+    <input type="range" id="benRetire" min="0" max="40000" step="500" value="0" />
+ 
+    <div class="sliderhead" style="margin-top:12px;"><span class="hint" style="margin:0;">Equipment</span><span class="val" id="benEquipVal">$0</span></div>
+    <input type="range" id="benEquip" min="0" max="20000" step="250" value="0" />
+ 
+    <div class="sliderhead" style="margin-top:12px;"><span class="hint" style="margin:0;">Other</span><span class="val" id="benOtherVal">$0</span></div>
+    <input type="range" id="benOther" min="0" max="20000" step="250" value="0" />
+ 
+    <div class="subtotal"><span>Total they fund themselves</span><span id="benTotalVal">$0</span></div>
+ 
+    <div class="gap"></div>
+    <div class="label">Health benefit you'll cover (annual)</div>
+    <div class="hint">Employer-paid health premiums. Adds to your cost only &#8212; does not change the equivalent salary.</div>
+    <div class="sliderhead">
+      <span class="hint" style="margin:0;">Slide to set</span>
+      <span class="val" id="healthVal">$0</span>
+    </div>
+    <input type="range" id="health" min="0" max="40000" step="500" value="0" />
+    <div class="ticks"><span>$0</span><span>$10k</span><span>$20k</span><span>$30k</span><span>$40k</span></div>
+ 
+    <div class="gap"></div>
+    <div class="label">Employer burden rate &#8212; beyond payroll tax &amp; health</div>
+    <div class="hint">Insurance, software, equipment, overhead, etc., as a % of salary.</div>
+    <div class="sliderhead">
+      <span class="hint" style="margin:0;">Burden rate</span>
+      <span class="val" id="burdenVal">17%</span>
+    </div>
+    <input type="range" id="burdenPct" min="0" max="40" step="0.5" value="17" />
+    <div class="ticks"><span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span></div>
+    <div class="chips" id="burdenChips">
+      <button data-v="15">15%</button>
+      <button data-v="17" class="on">17%</button>
+      <button data-v="20">20%</button>
+      <button data-v="25">25%</button>
+    </div>
+ 
+    <div class="gap"></div>
+    <div class="label">Fixed burden per head / month</div>
+    <div class="hint">Flat per-employee cost (tooling seats, desk, etc.), billed monthly.</div>
+    <div class="inputbox"><span>$</span><input id="burdenFixed" type="number" step="100" value="2000" /></div>
  
     <button class="toggle" id="qbiBtn">
       <span class="track on" id="qbiTrack"><span class="knob"></span></span>
@@ -88,6 +201,8 @@
         <span class="tg-sub">20% pass-through deduction. Turn off for high-income service businesses past the phase-out.</span>
       </span>
     </button>
+ 
+    <br><button class="reset" id="resetBtn">Reset to defaults</button>
   </div>
  
   <div class="hero">
@@ -98,20 +213,41 @@
  
   <div class="cards">
     <div class="card">
-      <h3>Their take-home — as a 1099 contractor</h3>
+      <h3>Their take-home &#8212; as a 1099 contractor</h3>
       <div id="c1099"></div>
     </div>
     <div class="card">
-      <h3>Their take-home — at the W-2 salary above</h3>
+      <h3>Their take-home &#8212; at the W-2 salary above</h3>
       <div id="cw2"></div>
     </div>
     <div class="card">
-      <h3>Your cost as the employer</h3>
+      <h3>Your direct cost &#8212; salary + payroll tax</h3>
       <div id="cemp"></div>
+    </div>
+    <div class="card burden">
+      <h3><span class="tag">Fully loaded</span>Your true employer burden</h3>
+      <div id="cburden"></div>
     </div>
   </div>
  
-  <p class="foot">Estimate only, not tax advice. Uses 2026 federal brackets and the $184,500 Social Security wage base; state tax is approximated as a flat effective rate (real state rules vary, and some don't follow the federal QBI or SE-tax deductions). Assumes no business expenses carry over to the W-2 role. Run real numbers past a CPA before making an offer.</p>
+  <div class="compare-head">
+    <h2>Compare two states</h2>
+    <button class="reset" id="cmpToggle" style="margin:0;">Show</button>
+  </div>
+  <p class="hint" id="cmpHint" style="display:none;">Same 1099 pay, filing status, benefits and burden &#8212; different work states. Equivalent W-2 salary and your fully loaded cost in each, using real brackets.</p>
+  <div class="two" id="cmpPickers" style="display:none;">
+    <div>
+      <div class="hint">State A</div>
+      <div class="selectbox"><select id="cmpA"></select></div>
+    </div>
+    <div>
+      <div class="hint">State B</div>
+      <div class="selectbox"><select id="cmpB"></select></div>
+    </div>
+  </div>
+  <div class="cmpgrid" id="cmpGrid" style="display:none; margin-top:14px;"></div>
+ 
+  <p class="foot">Estimate only, not tax advice. Uses 2026 federal brackets, the $184,500 Social Security wage base, and 2026 state individual income tax brackets &amp; standard deductions (Source: Tax Foundation, "2026 State Individual Income Tax Rates and Brackets"). State tax is computed on the W-2 salary less the state standard deduction. A few state-specific rules are NOT modeled: local/county income taxes; CA's 1%+ mental-health surtax and SDI payroll tax; CT and NY "tax benefit recapture"; phaseouts of deductions/exemptions at high incomes; and personal/dependent exemptions and credits. WA, TN, NH, FL, TX, NV, SD, AK, WY are treated as no wage-income-tax states. The equivalence solves for the salary at which the employee's net take-home plus employer benefits matches their current 1099 net. Run real numbers past a CPA before making an offer.</p>
 </div>
  
 <script>
@@ -123,88 +259,277 @@
     mfj: [[0,0.1],[24800,0.12],[100800,0.22],[211400,0.24],[403550,0.32],[512450,0.35],[768700,0.37]]
   };
  
-  const usd = n => "$" + Math.round(n).toLocaleString("en-US");
+  // 2026 state individual income tax brackets & standard deductions.
+  // Source: Tax Foundation, "2026 State Individual Income Tax Rates and Brackets."
+  // Each state: {sdS, sdC (std deductions single/couple), single:[[floor,rate]...], mfj:[[floor,rate]...]}
+  // or {none:true} for states with no wage income tax.
+  const STATE_TAX = {
+  "Alabama": {sdS:3000, sdC:8500, single:[[0.0, 0.02], [500.0, 0.04], [3000.0, 0.05]], mfj:[[0.0, 0.02], [1000.0, 0.04], [6000.0, 0.05]]},
+  "Alaska": {none:true},
+  "Arizona": {sdS:8350, sdC:16700, single:[[0.0, 0.025]], mfj:[[0.0, 0.025]]},
+  "Arkansas": {sdS:2470, sdC:4940, single:[[0.0, 0.02], [4600.0, 0.039]], mfj:[[0.0, 0.02], [4600.0, 0.039]]},
+  "California": {sdS:5540, sdC:11080, single:[[0.0, 0.01], [11079.0, 0.02], [26264.0, 0.04], [41452.0, 0.06], [57542.0, 0.08], [72724.0, 0.093], [371479.0, 0.103], [445771.0, 0.113], [742953.0, 0.123], [1000000.0, 0.133]], mfj:[[0.0, 0.01], [22158.0, 0.02], [52528.0, 0.04], [82904.0, 0.06], [115084.0, 0.08], [145448.0, 0.093], [742958.0, 0.103], [891542.0, 0.113], [1000000.0, 0.123], [1485906.0, 0.133]]},
+  "Colorado": {sdS:16100, sdC:32200, single:[[0.0, 0.044]], mfj:[[0.0, 0.044]]},
+  "Connecticut": {sdS:0, sdC:0, single:[[0.0, 0.02], [10000.0, 0.045], [50000.0, 0.055], [100000.0, 0.06], [200000.0, 0.065], [250000.0, 0.069], [500000.0, 0.0699]], mfj:[[0.0, 0.02], [20000.0, 0.045], [100000.0, 0.055], [200000.0, 0.06], [400000.0, 0.065], [500000.0, 0.069], [1000000.0, 0.0699]]},
+  "Delaware": {sdS:3250, sdC:6500, single:[[2000.0, 0.022], [5000.0, 0.039], [10000.0, 0.048], [20000.0, 0.052], [25000.0, 0.0555], [60000.0, 0.066]], mfj:[[2000.0, 0.022], [5000.0, 0.039], [10000.0, 0.048], [20000.0, 0.052], [25000.0, 0.0555], [60000.0, 0.066]]},
+  "Florida": {none:true},
+  "Georgia": {sdS:12000, sdC:24000, single:[[0.0, 0.0519]], mfj:[[0.0, 0.0519]]},
+  "Hawaii": {sdS:4400, sdC:8800, single:[[0.0, 0.014], [9600.0, 0.032], [14400.0, 0.055], [19200.0, 0.064], [24000.0, 0.068], [36000.0, 0.072], [48000.0, 0.076], [125000.0, 0.079], [175000.0, 0.0825], [225000.0, 0.09], [275000.0, 0.1], [325000.0, 0.11]], mfj:[[0.0, 0.014], [19200.0, 0.032], [28800.0, 0.055], [38400.0, 0.064], [48000.0, 0.068], [72000.0, 0.072], [96000.0, 0.076], [250000.0, 0.079], [350000.0, 0.0825], [450000.0, 0.09], [550000.0, 0.1], [650000.0, 0.11]]},
+  "Idaho": {sdS:16100, sdC:32200, single:[[4811.0, 0.053]], mfj:[[9622.0, 0.053]]},
+  "Illinois": {sdS:0, sdC:0, single:[[0.0, 0.0495]], mfj:[[0.0, 0.0495]]},
+  "Indiana": {sdS:0, sdC:0, single:[[0.0, 0.0295]], mfj:[[0.0, 0.0295]]},
+  "Iowa": {sdS:16100, sdC:32200, single:[[0.0, 0.038]], mfj:[[0.0, 0.038]]},
+  "Kansas": {sdS:3605, sdC:8240, single:[[0.0, 0.052], [23000.0, 0.0558]], mfj:[[0.0, 0.052], [46000.0, 0.0558]]},
+  "Kentucky": {sdS:3360, sdC:3360, single:[[0.0, 0.035]], mfj:[[0.0, 0.035]]},
+  "Louisiana": {sdS:12875, sdC:25750, single:[[0.0, 0.03]], mfj:[[0.0, 0.03]]},
+  "Maine": {sdS:8350, sdC:16700, single:[[0.0, 0.058], [27399.0, 0.0675], [64849.0, 0.0715]], mfj:[[0.0, 0.058], [54849.0, 0.0675], [129749.0, 0.0715]]},
+  "Maryland": {sdS:3350, sdC:6700, single:[[0.0, 0.02], [1000.0, 0.03], [2000.0, 0.04], [3000.0, 0.0475], [100000.0, 0.05], [125000.0, 0.0525], [150000.0, 0.055], [250000.0, 0.0575], [500000.0, 0.0625], [1000000.0, 0.065]], mfj:[[0.0, 0.02], [1000.0, 0.03], [2000.0, 0.04], [3000.0, 0.0475], [150000.0, 0.05], [175000.0, 0.0525], [225000.0, 0.055], [300000.0, 0.0575], [600000.0, 0.0625], [1200000.0, 0.065]]},
+  "Massachusetts": {sdS:0, sdC:0, single:[[0.0, 0.05], [1083150.0, 0.09]], mfj:[[0.0, 0.05], [1083150.0, 0.09]]},
+  "Michigan": {sdS:0, sdC:0, single:[[0.0, 0.0425]], mfj:[[0.0, 0.0425]]},
+  "Minnesota": {sdS:15300, sdC:30600, single:[[0.0, 0.0535], [33310.0, 0.068], [109430.0, 0.0785], [203150.0, 0.0985]], mfj:[[0.0, 0.0535], [48700.0, 0.068], [193480.0, 0.0785], [337930.0, 0.0985]]},
+  "Mississippi": {sdS:2300, sdC:4600, single:[[10000.0, 0.04]], mfj:[[10000.0, 0.04]]},
+  "Missouri": {sdS:16100, sdC:32200, single:[[1348.0, 0.02], [2696.0, 0.025], [4044.0, 0.03], [5392.0, 0.035], [6740.0, 0.04], [8088.0, 0.045], [9436.0, 0.047]], mfj:[[1348.0, 0.02], [2696.0, 0.025], [4044.0, 0.03], [5392.0, 0.035], [6740.0, 0.04], [8088.0, 0.045], [9436.0, 0.047]]},
+  "Montana": {sdS:16100, sdC:32200, single:[[0.0, 0.047], [47500.0, 0.0565]], mfj:[[0.0, 0.047], [95000.0, 0.0565]]},
+  "Nebraska": {sdS:8850, sdC:17700, single:[[0.0, 0.0246], [4130.0, 0.0351], [24760.0, 0.0455]], mfj:[[0.0, 0.0246], [8250.0, 0.0351], [49530.0, 0.0455]]},
+  "Nevada": {none:true},
+  "New Hampshire": {none:true},
+  "New Jersey": {sdS:0, sdC:0, single:[[0.0, 0.014], [20000.0, 0.0175], [35000.0, 0.035], [40000.0, 0.05525], [75000.0, 0.0637], [500000.0, 0.0897], [1000000.0, 0.1075]], mfj:[[0.0, 0.014], [20000.0, 0.0175], [50000.0, 0.0245], [70000.0, 0.035], [80000.0, 0.05525], [150000.0, 0.0637], [500000.0, 0.0897], [1000000.0, 0.1075]]},
+  "New Mexico": {sdS:16100, sdC:32200, single:[[0.0, 0.015], [5500.0, 0.032], [16500.0, 0.043], [33500.0, 0.047], [66500.0, 0.049], [210000.0, 0.059]], mfj:[[0.0, 0.015], [8000.0, 0.032], [25000.0, 0.043], [50000.0, 0.047], [100000.0, 0.049], [315000.0, 0.059]]},
+  "New York": {sdS:8000, sdC:16050, single:[[0.0, 0.039], [8500.0, 0.044], [11700.0, 0.0515], [13900.0, 0.054], [80650.0, 0.059], [215400.0, 0.0685], [1077550.0, 0.0965], [5000000.0, 0.103], [25000000.0, 0.109]], mfj:[[0.0, 0.039], [17150.0, 0.044], [23600.0, 0.0515], [27900.0, 0.054], [161550.0, 0.059], [323200.0, 0.0685], [2155350.0, 0.0965], [5000000.0, 0.103], [25000000.0, 0.109]]},
+  "North Carolina": {sdS:12750, sdC:25500, single:[[0.0, 0.0399]], mfj:[[0.0, 0.0399]]},
+  "North Dakota": {sdS:16100, sdC:32200, single:[[48475.0, 0.0195], [244825.0, 0.025]], mfj:[[80975.0, 0.0195], [298075.0, 0.025]]},
+  "Ohio": {sdS:0, sdC:0, single:[[26050.0, 0.0275]], mfj:[[26050.0, 0.0275]]},
+  "Oklahoma": {sdS:6350, sdC:12700, single:[[3750.0, 0.025], [4900.0, 0.035], [7200.0, 0.045]], mfj:[[7500.0, 0.025], [9800.0, 0.035], [14400.0, 0.045]]},
+  "Oregon": {sdS:2910, sdC:5820, single:[[0.0, 0.0475], [4550.0, 0.0675], [11400.0, 0.0875], [125000.0, 0.099]], mfj:[[0.0, 0.0475], [9100.0, 0.0675], [22800.0, 0.0875], [250000.0, 0.099]]},
+  "Pennsylvania": {sdS:0, sdC:0, single:[[0.0, 0.0307]], mfj:[[0.0, 0.0307]]},
+  "Rhode Island": {sdS:11200, sdC:22400, single:[[0.0, 0.0375], [82050.0, 0.0475], [186450.0, 0.0599]], mfj:[[0.0, 0.0375], [82050.0, 0.0475], [186450.0, 0.0599]]},
+  "South Carolina": {sdS:8350, sdC:16700, single:[[0.0, 0.0], [3640.0, 0.03], [18230.0, 0.06]], mfj:[[0.0, 0.0], [3640.0, 0.03], [18230.0, 0.06]]},
+  "South Dakota": {none:true},
+  "Tennessee": {none:true},
+  "Texas": {none:true},
+  "Utah": {sdS:0, sdC:0, single:[[0.0, 0.045]], mfj:[[0.0, 0.045]]},
+  "Vermont": {sdS:7650, sdC:15300, single:[[0.0, 0.0335], [49400.0, 0.066], [119700.0, 0.076], [249700.0, 0.0875]], mfj:[[0.0, 0.0335], [82500.0, 0.066], [199450.0, 0.076], [304000.0, 0.0875]]},
+  "Virginia": {sdS:8750, sdC:17500, single:[[0.0, 0.02], [3000.0, 0.03], [5000.0, 0.05], [17000.0, 0.0575]], mfj:[[0.0, 0.02], [3000.0, 0.03], [5000.0, 0.05], [17000.0, 0.0575]]},
+  "Washington": {none:true},
+  "Washington, D.C.": {sdS:16100, sdC:32200, single:[[0.0, 0.04], [10000.0, 0.06], [40000.0, 0.065], [60000.0, 0.085], [250000.0, 0.0925], [500000.0, 0.0975], [1000000.0, 0.1075]], mfj:[[0.0, 0.04], [10000.0, 0.06], [40000.0, 0.065], [60000.0, 0.085], [250000.0, 0.0925], [500000.0, 0.0975], [1000000.0, 0.1075]]},
+  "West Virginia": {sdS:0, sdC:0, single:[[0.0, 0.0222], [10000.0, 0.0296], [25000.0, 0.0333], [40000.0, 0.0444], [60000.0, 0.0482]], mfj:[[0.0, 0.0222], [10000.0, 0.0296], [25000.0, 0.0333], [40000.0, 0.0444], [60000.0, 0.0482]]},
+  "Wisconsin": {sdS:13960, sdC:25840, single:[[0.0, 0.035], [15110.0, 0.044], [51950.0, 0.053], [332720.0, 0.0765]], mfj:[[0.0, 0.035], [20150.0, 0.044], [69260.0, 0.053], [443630.0, 0.0765]]},
+  "Wyoming": {none:true},
+};
  
-  function fedTax(taxable, status) {
-    if (taxable <= 0) return 0;
-    const b = BRACKETS[status]; let tax = 0;
-    for (let i = 0; i < b.length; i++) {
-      const lower = b[i][0], upper = i + 1 < b.length ? b[i + 1][0] : Infinity;
-      if (taxable > lower) tax += (Math.min(taxable, upper) - lower) * b[i][1]; else break;
+  const DEFAULTS = { pay:120000, benHealth:0, benRetire:0, benEquip:0, benOther:0, health:0, burdenPct:17, burdenFixed:2000, status:"single", qbi:true, state:"California", customRate:5 };
+ 
+  const usd = n => "$" + Math.round(n).toLocaleString("en-US");
+  const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+ 
+  function bracketTax(brackets, taxable) {
+    if (taxable <= 0 || !brackets || !brackets.length) return 0;
+    let tax = 0;
+    for (let i = 0; i < brackets.length; i++) {
+      const lo = brackets[i][0], rt = brackets[i][1];
+      const hi = i + 1 < brackets.length ? brackets[i + 1][0] : Infinity;
+      if (taxable > lo) tax += (Math.min(taxable, hi) - lo) * rt; else break;
     }
     return tax;
   }
-  function compute1099(pay, status, sr, qbi) {
+  function fedTax(taxable, status) { return bracketTax(BRACKETS[status], taxable); }
+ 
+  // State tax on a given gross income. Uses real brackets + state standard deduction,
+  // unless state === "Custom (flat rate)", which applies a flat effective rate.
+  function stateTax(stateName, gross, status, customRate) {
+    if (stateName === "Custom (flat rate)") return customRate * Math.max(0, gross);
+    const d = STATE_TAX[stateName];
+    if (!d || d.none) return 0;
+    const sd = status === "mfj" ? d.sdC : d.sdS;
+    const taxable = Math.max(0, gross - (sd || 0));
+    return bracketTax(status === "mfj" ? d.mfj : d.single, taxable);
+  }
+ 
+  function compute1099(pay, stateName, status, qbi, customRate) {
     const seBase = pay * SE_FACTOR;
     const ss = Math.min(seBase, SS_WAGE_BASE) * 0.124;
     const medi = seBase * 0.029;
     const addl = Math.max(0, seBase - ADDL_MEDI_THRESHOLD[status]) * ADDL_MEDI_RATE;
-    const seTax = ss + medi + addl, halfSE = (ss + medi) / 2, agi = pay - halfSE;
+    const seTax = ss + medi + addl;
+    const halfSE = (ss + medi) / 2;
+    const agi = pay - halfSE;
     const preQBI = Math.max(0, agi - STD_DED[status]);
-    const qbiDed = qbi ? Math.min(0.2 * Math.max(0, agi), 0.2 * preQBI) : 0;
+    const qbiIncome = Math.max(0, pay - halfSE);
+    const qbiDed = qbi ? Math.min(0.2 * qbiIncome, 0.2 * preQBI) : 0;
     const fed = fedTax(Math.max(0, preQBI - qbiDed), status);
-    const state = sr * Math.max(0, pay - halfSE);
+    // State taxable base for SE income approximated as net SE earnings (pay - half SE tax).
+    const state = stateTax(stateName, Math.max(0, pay - halfSE), status, customRate);
     return { seTax, fed, state, net: pay - seTax - fed - state };
   }
-  function computeW2(salary, status, sr) {
+ 
+  function computeW2(salary, stateName, status, customRate) {
     const ss = Math.min(salary, SS_WAGE_BASE) * SS_RATE, medi = salary * MEDI_RATE;
     const addl = Math.max(0, salary - ADDL_MEDI_THRESHOLD[status]) * ADDL_MEDI_RATE;
     const empFICA = ss + medi + addl;
     const fed = fedTax(Math.max(0, salary - STD_DED[status]), status);
-    const state = sr * salary;
+    const state = stateTax(stateName, salary, status, customRate);
     return { empFICA, fed, state, net: salary - empFICA - fed - state };
   }
   const employerFICA = s => Math.min(s, SS_WAGE_BASE) * SS_RATE + s * MEDI_RATE;
  
-  function row(label, val, opts = {}) {
-    const neg = opts.neg ? "neg" : "", strong = opts.strong ? "strong" : "";
-    const sign = opts.neg ? "−" : "";
-    return `<div class="row ${strong}"><span class="rl">${label}</span><span class="rv ${neg}">${sign}${usd(Math.abs(val))}</span></div>`;
+  function solveSalary(pay, stateName, status, qbi, benefits, customRate) {
+    const targetNet = compute1099(pay, stateName, status, qbi, customRate).net - benefits;
+    let lo = 0, hi = Math.max(pay * 3, pay + 500000) + 200000;
+    for (let i = 0; i < 80; i++) {
+      const mid = (lo + hi) / 2;
+      if (computeW2(mid, stateName, status, customRate).net < targetNet) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
   }
  
-  let status = "single", qbi = true;
+  function row(label, val, opts = {}) {
+    const neg = opts.neg ? "neg" : "";
+    const cls = (opts.total ? "total " : "") + (opts.strong ? "strong " : "");
+    const sign = opts.neg ? "\u2212" : "";
+    return '<div class="row ' + cls + '"><span class="rl">' + label + '</span><span class="rv ' + neg + '">' + sign + usd(Math.abs(val)) + '</span></div>';
+  }
+ 
+  let status = "single", qbi = true, cmpOpen = false;
+ 
+  const $ = id => document.getElementById(id);
+  const stateSelect = $("stateSelect"), stateRate = $("stateRate");
+  const cmpA = $("cmpA"), cmpB = $("cmpB");
+ 
+  const STATE_NAMES = Object.keys(STATE_TAX).sort();
+  const OPTIONS = ["Custom (flat rate)"].concat(STATE_NAMES);
+  [stateSelect, cmpA, cmpB].forEach(sel => {
+    OPTIONS.forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name; opt.textContent = name;
+      sel.appendChild(opt);
+    });
+  });
+  stateSelect.value = "California";
+  cmpA.value = "California"; cmpB.value = "Texas";
+ 
+  function customRateVal() { return clamp(parseFloat(stateRate.value) || 0, 0, 20) / 100; }
+ 
+  function readInputs() {
+    const pay = clamp(parseFloat($("pay").value) || 0, 0, 100000000);
+    const benHealth = clamp(parseFloat($("benHealth").value) || 0, 0, 40000);
+    const benRetire = clamp(parseFloat($("benRetire").value) || 0, 0, 40000);
+    const benEquip = clamp(parseFloat($("benEquip").value) || 0, 0, 20000);
+    const benOther = clamp(parseFloat($("benOther").value) || 0, 0, 20000);
+    const benefits = benHealth + benRetire + benEquip + benOther;
+    const health = clamp(parseFloat($("health").value) || 0, 0, 40000);
+    const burdenPct = clamp(parseFloat($("burdenPct").value) || 0, 0, 40) / 100;
+    const burdenFixed = clamp(parseFloat($("burdenFixed").value) || 0, 0, 1000000);
+    return { pay, benHealth, benRetire, benEquip, benOther, benefits, health, burdenPct, burdenFixed };
+  }
  
   function render() {
-    const pay = parseFloat(document.getElementById("pay").value) || 0;
-    const sr = (parseFloat(document.getElementById("stateRate").value) || 0) / 100;
-    const benefits = parseFloat(document.getElementById("benefits").value) || 0;
+    const sName = stateSelect.value;
+    const cr = customRateVal();
+    $("customWrap").style.display = sName === "Custom (flat rate)" ? "block" : "none";
  
-    const r1099 = compute1099(pay, status, sr, qbi);
-    const targetNet = r1099.net - benefits;
-    let lo = 0, hi = pay * 2 + 200000;
-    for (let i = 0; i < 60; i++) {
-      const mid = (lo + hi) / 2;
-      if (computeW2(mid, status, sr).net < targetNet) lo = mid; else hi = mid;
-    }
-    const salary = (lo + hi) / 2;
-    const rW2 = computeW2(salary, status, sr);
-    const employerCost = salary + employerFICA(salary) + benefits;
+    const { pay, benHealth, benRetire, benEquip, benOther, benefits, health, burdenPct, burdenFixed } = readInputs();
  
-    document.getElementById("salary").textContent = usd(salary);
-    document.getElementById("salaryDelta").textContent =
+    // live slider labels
+    $("benHealthVal").textContent = usd(benHealth);
+    $("benRetireVal").textContent = usd(benRetire);
+    $("benEquipVal").textContent = usd(benEquip);
+    $("benOtherVal").textContent = usd(benOther);
+    $("benTotalVal").textContent = usd(benefits);
+    $("healthVal").textContent = usd(health);
+    $("burdenVal").textContent = (burdenPct * 100).toFixed(burdenPct * 100 % 1 === 0 ? 0 : 1) + "%";
+    document.querySelectorAll("#burdenChips button").forEach(b =>
+      b.classList.toggle("on", parseFloat(b.dataset.v) === +(burdenPct * 100).toFixed(1)));
+ 
+    const r1099 = compute1099(pay, sName, status, qbi, cr);
+    const salary = solveSalary(pay, sName, status, qbi, benefits, cr);
+    const rW2 = computeW2(salary, sName, status, cr);
+ 
+    // effective state rate shown on the W-2 salary
+    const effOnSalary = salary > 0 ? rW2.state / salary * 100 : 0;
+    $("effRate").innerHTML = sName === "Custom (flat rate)"
+      ? "Flat custom rate applied."
+      : (STATE_TAX[sName].none
+          ? "<b>" + sName + "</b>: no state income tax on wages."
+          : "<b>" + sName + "</b>: effective " + effOnSalary.toFixed(2) + "% on the W-2 salary (real brackets, std. deduction applied).");
+ 
+    const empTax = employerFICA(salary);
+    const directCost = salary + empTax + benefits + health;
+    const burdenExtra = salary * burdenPct + burdenFixed * 12;
+    const loadedCost = directCost + burdenExtra;
+ 
+    $("salary").textContent = usd(salary);
+    $("salaryDelta").textContent =
       salary > pay ? usd(salary - pay) + " above the 1099 figure"
       : salary < pay ? usd(pay - salary) + " below the 1099 figure"
       : "same as the 1099 figure";
  
-    document.getElementById("c1099").innerHTML =
+    const benParts = [];
+    if (benHealth > 0) benParts.push("health " + usd(benHealth));
+    if (benRetire > 0) benParts.push("retirement " + usd(benRetire));
+    if (benEquip > 0) benParts.push("equipment " + usd(benEquip));
+    if (benOther > 0) benParts.push("other " + usd(benOther));
+ 
+    $("c1099").innerHTML =
       row("Gross pay", pay) + row("Self-employment tax (15.3%)", r1099.seTax, {neg:1}) +
       row("Federal income tax", r1099.fed, {neg:1}) + row("State income tax", r1099.state, {neg:1}) +
       row("Net take-home", r1099.net, {strong:1}) +
-      (benefits > 0 ? `<div class="note">…out of which they pay ~${usd(benefits)} for their own benefits.</div>` : "");
+      (benefits > 0 ? '<div class="note">\u2026out of which they fund ~' + usd(benefits) + ' themselves (' + benParts.join(", ") + ').</div>' : "");
  
-    document.getElementById("cw2").innerHTML =
+    $("cw2").innerHTML =
       row("Salary", salary) + row("Employee payroll tax (7.65%)", rW2.empFICA, {neg:1}) +
       row("Federal income tax", rW2.fed, {neg:1}) + row("State income tax", rW2.state, {neg:1}) +
       row("Net take-home", rW2.net, {strong:1}) +
-      (benefits > 0 ? `<div class="note">+ ${usd(benefits)} in employer benefits = equivalent to their 1099 net.</div>` : "");
+      (benefits > 0 ? '<div class="note">+ ' + usd(benefits) + ' in employer benefits = equivalent to their 1099 net.</div>' : "");
  
-    const more = employerCost > pay;
-    document.getElementById("cemp").innerHTML =
-      row("Salary", salary) + row("Employer payroll tax (7.65%)", employerFICA(salary), {neg:1}) +
+    const moreDirect = directCost > pay;
+    $("cemp").innerHTML =
+      row("Salary", salary) + row("Employer payroll tax (7.65%)", empTax, {neg:1}) +
       (benefits > 0 ? row("Benefits provided", benefits, {neg:1}) : "") +
-      row("Total cost", employerCost, {strong:1}) +
-      `<div class="note">You pay ${usd(pay)} today as a contractor. This W-2 arrangement costs <strong style="color:${more ? 'var(--accent)' : 'var(--ink)'}">${usd(Math.abs(employerCost - pay))} ${more ? 'more' : 'less'}</strong> per year — the price of covering half their payroll tax${benefits > 0 ? ' and their benefits' : ''}.</div>`;
+      (health > 0 ? row("Health benefit", health, {neg:1}) : "") +
+      row("Direct cost", directCost, {strong:1}) +
+      '<div class="note">vs. ' + usd(pay) + ' today as a contractor \u2014 ' + usd(Math.abs(directCost - pay)) + ' ' + (moreDirect ? 'more' : 'less') + ' before overhead.</div>';
+ 
+    const moreLoaded = loadedCost > pay;
+    const multiple = pay > 0 ? (loadedCost / pay) : 0;
+    $("cburden").innerHTML =
+      row("Salary", salary) +
+      row("Employer payroll tax", empTax, {neg:1}) +
+      (benefits > 0 ? row("Benefits", benefits, {neg:1}) : "") +
+      (health > 0 ? row("Health benefit", health, {neg:1}) : "") +
+      row("Burden (" + (burdenPct*100).toFixed(1) + "% of salary)", salary * burdenPct, {neg:1}) +
+      row("Fixed (" + usd(burdenFixed) + "/mo \u00d7 12)", burdenFixed * 12, {neg:1}) +
+      row("Fully loaded annual cost", loadedCost, {total:1}) +
+      '<div class="note">That\'s <strong style="color:' + (moreLoaded ? 'var(--accent)' : 'var(--ink)') + '">' + usd(Math.abs(loadedCost - pay)) + ' ' + (moreLoaded ? 'more' : 'less') + '</strong> than the ' + usd(pay) + ' you pay today \u2014 a fully loaded multiple of <strong>' + multiple.toFixed(2) + '\u00d7</strong> the contractor rate.</div>';
+ 
+    if (cmpOpen) renderCompare(pay, benefits, health, burdenPct, burdenFixed, cr);
   }
+ 
+  function renderCompare(pay, benefits, health, burdenPct, burdenFixed, cr) {
+    const cols = [["A", cmpA.value], ["B", cmpB.value]].map(([k, name]) => {
+      const salary = solveSalary(pay, name, status, qbi, benefits, cr);
+      const w2 = computeW2(salary, name, status, cr);
+      const loaded = salary + employerFICA(salary) + benefits + health + salary * burdenPct + burdenFixed * 12;
+      const eff = salary > 0 ? w2.state / salary * 100 : 0;
+      const noTax = name !== "Custom (flat rate)" && STATE_TAX[name].none;
+      return { name, salary, loaded, eff, noTax };
+    });
+    const winIdx = cols[0].loaded <= cols[1].loaded ? 0 : 1;
+    const diff = Math.abs(cols[0].loaded - cols[1].loaded);
+    $("cmpGrid").innerHTML = cols.map((c, i) =>
+      '<div class="cmpcol ' + (i === winIdx ? 'win' : '') + '">' +
+        '<h4>' + c.name + '</h4>' +
+        '<div class="st">' + (c.name === "Custom (flat rate)" ? 'flat rate' : c.noTax ? 'no wage tax' : c.eff.toFixed(2) + '% effective') + '</div>' +
+        '<div class="st">Equivalent W-2 salary</div>' +
+        '<div class="sal">' + usd(c.salary) + '</div>' +
+        '<div class="crow"><span>Fully loaded cost</span><span class="cv">' + usd(c.loaded) + '</span></div>' +
+        (i === winIdx
+          ? '<div class="winbadge">\u2713 Lower loaded cost</div>'
+          : '<div class="winbadge" style="color:var(--accent);">' + usd(diff) + ' more</div>') +
+      '</div>').join("");
+  }
+ 
+  stateSelect.addEventListener("change", render);
+  stateRate.addEventListener("input", render);
  
   document.querySelectorAll("#status button").forEach(b => b.addEventListener("click", () => {
     status = b.dataset.v;
@@ -212,13 +537,43 @@
     b.classList.add("on");
     render();
   }));
-  document.getElementById("qbiBtn").addEventListener("click", () => {
+  $("qbiBtn").addEventListener("click", () => {
     qbi = !qbi;
-    document.getElementById("qbiTrack").classList.toggle("on", qbi);
+    $("qbiTrack").classList.toggle("on", qbi);
     render();
   });
-  ["pay", "stateRate", "benefits"].forEach(id =>
-    document.getElementById(id).addEventListener("input", render));
+  ["pay", "benHealth", "benRetire", "benEquip", "benOther", "health", "burdenPct", "burdenFixed"].forEach(id => $(id).addEventListener("input", render));
+ 
+  document.querySelectorAll("#burdenChips button").forEach(b => b.addEventListener("click", () => {
+    $("burdenPct").value = b.dataset.v;
+    render();
+  }));
+ 
+  $("cmpToggle").addEventListener("click", () => {
+    cmpOpen = !cmpOpen;
+    ["cmpHint","cmpPickers","cmpGrid"].forEach(id => $(id).style.display = cmpOpen ? (id === "cmpPickers" ? "flex" : id === "cmpGrid" ? "grid" : "block") : "none");
+    $("cmpToggle").textContent = cmpOpen ? "Hide" : "Show";
+    render();
+  });
+  [cmpA, cmpB].forEach(sel => sel.addEventListener("change", render));
+ 
+  $("resetBtn").addEventListener("click", () => {
+    $("pay").value = DEFAULTS.pay;
+    $("benHealth").value = DEFAULTS.benHealth;
+    $("benRetire").value = DEFAULTS.benRetire;
+    $("benEquip").value = DEFAULTS.benEquip;
+    $("benOther").value = DEFAULTS.benOther;
+    $("health").value = DEFAULTS.health;
+    $("burdenPct").value = DEFAULTS.burdenPct;
+    $("burdenFixed").value = DEFAULTS.burdenFixed;
+    stateRate.value = DEFAULTS.customRate;
+    stateSelect.value = DEFAULTS.state;
+    status = DEFAULTS.status;
+    document.querySelectorAll("#status button").forEach(x => x.classList.toggle("on", x.dataset.v === status));
+    qbi = DEFAULTS.qbi;
+    $("qbiTrack").classList.toggle("on", qbi);
+    render();
+  });
  
   render();
 </script>

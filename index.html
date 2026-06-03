@@ -121,7 +121,14 @@
   <p class="lede">What to pay someone as a salaried employee so their take-home matches what they net today as a 1099 contractor &#8212; and what that role actually costs you fully loaded. 2026 figures.</p>
  
   <div class="panel">
-    <div class="label">Current annual 1099 pay</div>
+    <div class="label">Start from</div>
+    <div class="seg" id="mode" style="margin-bottom:16px;">
+      <button data-v="from1099" class="on">1099 pay &#8594; find salary</button>
+      <button data-v="fromW2">W-2 salary &#8594; find cost</button>
+    </div>
+ 
+    <div class="label" id="payLabel">Current annual 1099 pay</div>
+    <div class="hint" id="payHint">What the contractor earns today. The tool solves for the W-2 salary that matches their take-home.</div>
     <div class="inputbox"><span>$</span><input id="pay" type="number" step="1000" value="0" /></div>
  
     <div class="gap"></div>
@@ -412,7 +419,7 @@
     return '<div class="row ' + cls + '"><span class="rl">' + label + '</span><span class="rv ' + neg + '">' + sign + usd(Math.abs(val)) + '</span></div>';
   }
  
-  let status = "single", qbi = false, cmpOpen = false, healthPrem = 9300;
+  let status = "single", qbi = false, cmpOpen = false, healthPrem = 9300, mode = "from1099";
  
   const $ = id => document.getElementById(id);
   const stateSelect = $("stateSelect"), stateRate = $("stateRate");
@@ -472,16 +479,24 @@
       b.classList.toggle("on", parseFloat(b.dataset.v) === +(burdenPct * 100).toFixed(1)));
  
     const noState = sName === PLACEHOLDER;
- 
-    // Over-funded guard: covered benefits can't sensibly exceed the contractor's net.
-    // Cap them for the math and flag it, rather than silently flooring salary at $0.
-    const r1099 = compute1099(pay, noState ? "Custom (flat rate)" : sName, status, qbi, cr);
-    const overFunded = covered > r1099.net;
-    const effCovered = Math.min(covered, r1099.net);
- 
     const solveState = noState ? "Custom (flat rate)" : sName;  // placeholder => treat state tax as 0 via custom 0%
     const solveCr = noState ? 0 : cr;
-    const salary = solveSalary(pay, solveState, status, qbi, effCovered, solveCr);
+    const fromW2 = mode === "fromW2";
+ 
+    // r1099 = the same dollar figure treated as contractor cash (used for comparison in both modes)
+    const r1099 = compute1099(pay, solveState, status, qbi, solveCr);
+ 
+    let salary, overFunded = false, effCovered;
+    if (fromW2) {
+      // The figure you typed IS the W-2 salary. Benefits don't reduce it; they add to cost only.
+      salary = pay;
+      effCovered = covered;
+    } else {
+      // Solve backward for the salary that matches contractor take-home, net of benefits you'll cover.
+      overFunded = covered > r1099.net;
+      effCovered = Math.min(covered, r1099.net);
+      salary = solveSalary(pay, solveState, status, qbi, effCovered, solveCr);
+    }
     const rW2 = computeW2(salary, solveState, status, solveCr);
  
     // effective state rate shown on the W-2 salary
@@ -499,12 +514,21 @@
     const burdenExtra = salary * burdenPct + burdenFixed * 12;
     const loadedCost = directCost + burdenExtra;
  
-    $("salary").textContent = usd(salary);
-    $("salaryDelta").textContent = overFunded
-      ? "Benefits you cover exceed their take-home \u2014 capped"
-      : (salary > pay ? usd(salary - pay) + " above the 1099 figure"
-        : salary < pay ? usd(pay - salary) + " below the 1099 figure"
-        : "same as the 1099 figure");
+    // Hero: in from1099 mode show the solved salary; in fromW2 mode show the loaded cost.
+    if (fromW2) {
+      document.querySelector(".hero .k").textContent = "Fully loaded cost of this W-2 salary";
+      $("salary").textContent = usd(loadedCost);
+      const mult = pay > 0 ? (loadedCost / pay) : 0;
+      $("salaryDelta").textContent = usd(salary) + " salary \u2192 " + mult.toFixed(2) + "\u00d7 loaded";
+    } else {
+      document.querySelector(".hero .k").textContent = "Pay them as W-2 salary";
+      $("salary").textContent = usd(salary);
+      $("salaryDelta").textContent = overFunded
+        ? "Benefits you cover exceed their take-home \u2014 capped"
+        : (salary > pay ? usd(salary - pay) + " above the 1099 figure"
+          : salary < pay ? usd(pay - salary) + " below the 1099 figure"
+          : "same as the 1099 figure");
+    }
  
     const covParts = [];
     if (covHealth > 0) covParts.push("health " + usd(covHealth));
@@ -517,15 +541,17 @@
       row("Gross pay", pay) + row("Self-employment tax (15.3%)", r1099.seTax, {neg:1}) +
       row("Federal income tax", r1099.fed, {neg:1}) + row("State income tax", r1099.state, {neg:1}) +
       row("Net take-home", r1099.net, {strong:1}) +
-      (overFunded ? '<div class="note" style="color:var(--accent)">The benefits you\'ve set ($' + usd(covered).slice(1) + ') exceed their entire take-home, so the equivalent salary can\'t go lower than $0. Lower the covered benefits to model a real offer.</div>' : "") +
-      (!overFunded && covered > 0 ? '<div class="note">You\'ll take over ~' + usd(covered) + ' they fund today (' + covParts.join(", ") + '), so the salary needed drops by that much.</div>' : "") +
-      (keep > 0 ? '<div class="note">They keep funding ~' + usd(keep) + ' themselves (' + keepParts.join(", ") + ') \u2014 unchanged, so it doesn\'t affect the salary or your cost.</div>' : "");
+      (fromW2
+        ? '<div class="note">The same ' + usd(pay) + ' paid as flat 1099 contract cash \u2014 they shoulder the full self-employment tax, and it costs you exactly ' + usd(pay) + '.</div>'
+        : (overFunded ? '<div class="note" style="color:var(--accent)">The benefits you\'ve set ($' + usd(covered).slice(1) + ') exceed their entire take-home, so the equivalent salary can\'t go lower than $0. Lower the covered benefits to model a real offer.</div>' : "") +
+          (!overFunded && covered > 0 ? '<div class="note">You\'ll take over ~' + usd(covered) + ' they fund today (' + covParts.join(", ") + '), so the salary needed drops by that much.</div>' : "") +
+          (keep > 0 ? '<div class="note">They keep funding ~' + usd(keep) + ' themselves (' + keepParts.join(", ") + ') \u2014 unchanged, so it doesn\'t affect the salary or your cost.</div>' : ""));
  
     $("cw2").innerHTML =
       row("Salary", salary) + row("Employee payroll tax (7.65%)", rW2.empFICA, {neg:1}) +
       row("Federal income tax", rW2.fed, {neg:1}) + row("State income tax", rW2.state, {neg:1}) +
       row("Net take-home", rW2.net, {strong:1}) +
-      (effCovered > 0 ? '<div class="note">+ ' + usd(effCovered) + ' in benefits you cover = equivalent to their 1099 net.</div>' : "");
+      (effCovered > 0 ? '<div class="note">+ ' + usd(effCovered) + ' in benefits you cover' + (fromW2 ? ' on top of salary.' : ' = equivalent to their 1099 net.') + '</div>' : "");
  
     const moreDirect = directCost > pay;
     $("cemp").innerHTML =
@@ -648,6 +674,20 @@
   });
   ["pay", "healthPct", "covEquip", "keepRetire", "keepOther", "burdenPct", "burdenFixed"].forEach(id => $(id).addEventListener("input", render));
  
+  document.querySelectorAll("#mode button").forEach(b => b.addEventListener("click", () => {
+    mode = b.dataset.v;
+    document.querySelectorAll("#mode button").forEach(x => x.classList.remove("on"));
+    b.classList.add("on");
+    if (mode === "fromW2") {
+      $("payLabel").textContent = "W-2 salary you want to offer";
+      $("payHint").textContent = "The salary you're considering. The tool shows what it nets the employee and what it costs you fully loaded \u2014 versus paying the same figure as a 1099 contract.";
+    } else {
+      $("payLabel").textContent = "Current annual 1099 pay";
+      $("payHint").textContent = "What the contractor earns today. The tool solves for the W-2 salary that matches their take-home.";
+    }
+    render();
+  }));
+ 
   document.querySelectorAll("#burdenChips button").forEach(b => b.addEventListener("click", () => {
     $("burdenPct").value = b.dataset.v;
     render();
@@ -686,6 +726,10 @@
     document.querySelectorAll("#status button").forEach(x => x.classList.toggle("on", x.dataset.v === status));
     qbi = DEFAULTS.qbi;
     $("qbiTrack").classList.toggle("on", qbi);
+    mode = "from1099";
+    document.querySelectorAll("#mode button").forEach(x => x.classList.toggle("on", x.dataset.v === "from1099"));
+    $("payLabel").textContent = "Current annual 1099 pay";
+    $("payHint").textContent = "What the contractor earns today. The tool solves for the W-2 salary that matches their take-home.";
     render();
   });
  
